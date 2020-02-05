@@ -131,6 +131,8 @@ ui <- dashboardPage(
                                                          ### parameter: changepoint.prior.scale
                                                          numericInput("changepoint_scale","changepoint.prior.scale", value = 0.05, step = 0.01)),
                                                   column(width = 6,
+                                                         ### parameter: data.date.end
+                                                         dateInput("data.date.end", "data.date.end"),
                                                          
                                                          ### parameter: holidays.prior.scale
                                                          numericInput("holidays_scale","holidays.prior.scale", value = 10),
@@ -151,7 +153,7 @@ ui <- dashboardPage(
                                                   numericInput("periods","periods",value=365),
                                                   ### parameter: freq
                                                   selectInput("freq","freq",
-                                                              choices = c('day', 'week', 'month', 'quarter','year')),
+                                                              choices = c(30 * 60, 'day', 'week', 'month', 'quarter','year')),
                                                   ### parameter: include_history
                                                   checkboxInput("include_history","include_history", value = TRUE)
                                            )
@@ -236,6 +238,7 @@ server <- function(input, output, session) {
   
   ## Next/Back Buttons actions (to be turned into modules)---------------------------
   observeEvent(input$next1, {
+    print('next button pressed')
     updateTabsetPanel(session, "inTabset",
                       selected = "panel2")
   })
@@ -273,7 +276,10 @@ server <- function(input, output, session) {
   dat <- reactive({
     req(input$ts_file)
     file_in <- input$ts_file
-    read.csv(file_in$datapath, header = T)     # read csv
+    print(input$data.date.end)
+    df <- read.csv(file_in$datapath, header = T)     # read csv
+    print(sum(as.Date(df$ds) < input$data.date.end))
+    df[as.Date(df$ds) < input$data.date.end,]
   })
   
   ## Toggle submit button state according to main data -----------------------
@@ -343,8 +349,9 @@ server <- function(input, output, session) {
       
     }
     
-    datx <- dat() %>% 
-      mutate(y = log(y))
+    # datx <- dat() %>% 
+    #   mutate(y = log(y))
+    datx <- dat()
     
     kk <- prophet(datx,
                   growth = input$growth,
@@ -372,7 +379,7 @@ server <- function(input, output, session) {
     req(p_model(),input$periods, input$freq)
     make_future_dataframe(p_model(),
                           periods = input$periods,
-                          freq = input$freq,
+                          freq = 60 * 60,
                           include_history = input$include_history)
   })
   
