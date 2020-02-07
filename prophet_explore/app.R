@@ -118,12 +118,12 @@ ui <- dashboardPage(
                                                                       c('linear','logistic'), inline = TRUE),
                                                          
                                                          ### parameter: yearly.seasonality
-                                                         checkboxInput("yearly","yearly.seasonality", value = TRUE),
+                                                         checkboxInput("yearly","yearly.seasonality", value = FALSE),
                                                          
                                                          ### parameter: weekly.seasonality 
                                                          checkboxInput("monthly","weekly.seasonality", value = TRUE),
                                                          ### parameter: n.changepoints
-                                                         numericInput("n.changepoints","n.changepoints", value = 25),
+                                                         numericInput("n.changepoints","n.changepoints", value = 2),
                                                          
                                                          ### parameter: seasonality.prior.scale
                                                          numericInput("seasonality_scale","seasonality.prior.scale", value = 10),
@@ -141,7 +141,7 @@ ui <- dashboardPage(
                                                          numericInput("mcmc.samples", "mcmc.samples", value = 0),
                                                          
                                                          ### parameter: interval.width
-                                                         numericInput("interval.width", "interval.width", value= 0.8, step = 0.1),
+                                                         numericInput("interval.width", "interval.width", value= 0.99, step = 0.01),
                                                          ### parameter: uncertainty.samples
                                                          numericInput("uncertainty.samples","uncertainty.samples", value = 1000))
                                                   
