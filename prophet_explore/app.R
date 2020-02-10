@@ -282,6 +282,18 @@ server <- function(input, output, session) {
     df[as.Date(df$ds) < input$data.date.end,]
   })
   
+  dat_post <- reactive({
+    req(input$ts_file)
+    file_in <- input$ts_file
+    print(input$data.date.end)
+    df <- read.csv(file_in$datapath, header = T)     # read csv
+    print(sum(as.Date(df$ds) < input$data.date.end))
+    df_post <- df[as.Date(df$ds) >= input$data.date.end,]
+    df_post$ds <- as.POSIXct(df_post$ds)
+    names(df_post) = c('X', 'ds', 'y_actual')
+    df_post
+  })
+  
   ## Toggle submit button state according to main data -----------------------
   observe({
     if(!(c("ds","y") %in% names(dat()) %>% mean ==1))
@@ -422,7 +434,12 @@ server <- function(input, output, session) {
   ## output:  plot forecast -------------
   output$ts_plot <- renderPlot({
     # req(logistic_check()!="error")
-    g <- plot(p_model(), forecast())
+    print(head(dat_post()))
+    df_post <- dat_post()
+    df_post <- merge(dat_post(), forecast())
+    df_post$anomaly <- df_post$y_actual > df_post$yhat_upper | df_post$y_actual < df_post$yhat_lower
+    g <- plot(p_model(), forecast()) + geom_point(data=df_post, aes(x=ds, y=y_actual, color=anomaly)) +
+      scale_color_manual(values = c("seagreen4", "red3"))
     g+theme_classic()
   })
   
